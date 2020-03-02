@@ -1,3 +1,4 @@
+const Apify = require('apify');
 
 String.prototype.queGuay = function() {
     return "que guay " + this;
@@ -63,7 +64,7 @@ const loadItems = async ( page, goOnSelector, listSelector, fnReadItem ) => {
         if (goOn) {
             await page.click(goOnSelector);
             await Apify.utils.sleep(10000);
-            console.log("GO ON NEXT PAGEqqqe");
+            console.log("GO ON NEXT PAGE on remote");
         }
 
         pageIndex += 1;
@@ -74,3 +75,6 @@ const loadItems = async ( page, goOnSelector, listSelector, fnReadItem ) => {
 
     return result;
 };
+
+
+module.exports = { loadItems };
