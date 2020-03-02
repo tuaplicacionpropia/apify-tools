@@ -28,3 +28,49 @@ String.prototype.bookName = function() {
     return result;
 };
 
+const loadItems = async ( page, goOnSelector, listSelector, fnReadItem ) => {
+    var result = [];
+
+    var goOn = true;
+    var pageIndex = 1;
+
+    //var goOnSelector = "a:contains('Siguiente')";
+    //const goOnSelector = "div[onclick*='pSiguiente']";
+    console.log(">>>>>>>>>>>>> " + typeof fnReadItem);
+    while (goOn) {
+        console.log("reading page " + pageIndex);
+
+        //https://stackoverflow.com/questions/46088351/puppeteer-pass-variable-in-evaluate
+        const pageItems = await page.evaluate((selector2, myFnReadItem) => {
+          var selector4 = selector2 + " " + myFnReadItem;
+          //const func = new Function(`return ${myFnReadItem}.apply(null, arguments)`);
+          //const func = new Function("self", "return {title: 'periquito'};");
+          const func = new Function("return " + myFnReadItem)();          
+          return $(selector2).map(function(self) {
+              //return {title: 'HOLA'};
+              return func(this);
+              //return {title: selector4};
+              //return {title: selector4 + ">>>>>>>>>>" + (typeof func)};
+          }).get();
+          //return $(selector2).map(func).get();
+        }, listSelector, fnReadItem.toString());
+        //console.log("pageItems = " + pageItems);
+        result = result.concat(pageItems);
+
+        goOn = await page.evaluate((selector) => { 
+            return $(selector).length;
+        }, goOnSelector);
+        if (goOn) {
+            await page.click(goOnSelector);
+            await Apify.utils.sleep(10000);
+            console.log("GO ON NEXT PAGEqqqe");
+        }
+
+        pageIndex += 1;
+        if (pageIndex > 2) {
+            break;
+        }
+    }
+
+    return result;
+};
