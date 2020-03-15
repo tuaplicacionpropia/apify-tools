@@ -76,5 +76,88 @@ const loadItems = async ( page, goOnSelector, listSelector, fnReadItem ) => {
     return result;
 };
 
+const saveScreenshot = async ( page, target ) => {
+  const screenshotBuffer = await page.screenshot();
+  await Apify.setValue(target + ".png", screenshotBuffer, { contentType: 'image/png' });
+};
 
-module.exports = { loadItems };
+const keyEnter = async ( page, selector ) => {
+  await page.type(selector, String.fromCharCode(13));
+};
+
+const setValue = async ( page, selector, newValue ) => {
+  await page.evaluate((sel, value) => {
+    $(sel).val(value);
+  }, selector, newValue);
+};
+
+const attr = async ( page, selector, attrName ) => {
+  return await page.evaluate((sel, aName) => {
+    return $(sel).attr(aName);
+  }, selector, attrName);
+};
+
+const writeKeys = async ( page, selector, keys ) => {
+  await page.type(selector, keys);
+};
+
+const click = async ( page, element ) => {
+  await page.click(element);
+};
+
+const waitMs = async ( ms ) => {
+  await Apify.utils.sleep(ms);
+};
+
+const runMain = async ( fn, startUrl ) => {
+  //console.log("AAAAAAAAAA  func = " + fn.toString());
+  //console.log("AAAAAAAAAA  startUrl = " + startUrl);
+  Apify.main(async () => {
+
+    // Get input of the actor.
+    // If you'd like to have your input checked and generate a user
+    // interface for it, add INPUT_SCHEMA.json file to your actor.
+    // For more information, see https://docs.apify.com/actor/input-schema
+    const input = await Apify.getInput();
+    console.log('Input:');
+    console.dir(input);
+
+    // Do something useful here...
+
+    console.log('Launching Puppeteer...');
+    const browser = await Apify.launchPuppeteer();
+
+    const page = await browser.newPage();
+    
+    if (startUrl != null) {
+      console.log(`Opening URL: ${startUrl}`);
+      await page.goto(startUrl);
+    }
+    
+    // Save output
+    const output = await fn(input, page, browser, startUrl);
+    //console.log(">>>>>>>>>>> fn = " + fn.toString());
+    //console.log(">>>>>>>>>>> startUrl = " + startUrl);
+    //const output= {hola: "adios"};
+    console.log('Output:');
+    console.dir(output);
+    await Apify.setValue('OUTPUT', output);
+  });
+
+};
+
+
+
+
+module.exports = { 
+  loadItems, 
+  saveScreenshot, 
+  keyEnter, 
+  setValue, 
+  attr, 
+  writeKeys, 
+  click, 
+  runMain, 
+  waitMs
+};
+//const { loadItems, saveScreenshot, keyEnter, setValue, attr, writeKeys, click, runMain, waitMs } = require('./utils');
