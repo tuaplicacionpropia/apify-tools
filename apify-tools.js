@@ -68,7 +68,7 @@ const loadItems = async ( page, goOnSelector, listSelector, fnReadItem ) => {
         }
 
         pageIndex += 1;
-        if (pageIndex > 2) {
+        if (false && pageIndex > 2) {
             break;
         }
     }
